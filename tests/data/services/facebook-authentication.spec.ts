@@ -1,3 +1,4 @@
+import { AuthenticationError } from '@/domain/errors'
 import { type FacebookAuthentication } from '@/domain/features'
 
 class FacebookAuthenticationService {
@@ -5,8 +6,9 @@ class FacebookAuthenticationService {
     private readonly loadFacebookUserApi: LoadFacebookUserApi
   ) {}
 
-  async execute (params: FacebookAuthentication.Params): Promise<void> {
+  async execute (params: FacebookAuthentication.Params): Promise<AuthenticationError> {
     await this.loadFacebookUserApi.loadUser(params)
+    return new AuthenticationError()
   }
 }
 
@@ -21,9 +23,11 @@ export namespace LoadFacebookUserApi {
 
 class LoadFacebookUserApiSpy implements LoadFacebookUserApi {
   token?: string
+  result = undefined
 
   async loadUser (params: LoadFacebookUserApi.Params): Promise<LoadFacebookUserApi.Result> {
     this.token = params.token
+    return this.result
   }
 }
 
@@ -35,5 +39,15 @@ describe('FacebookAuthenticationService', () => {
     await sut.execute({ token: 'valid-token' })
 
     expect(loadFacebookUserApi.token).toBe('valid-token')
+  })
+
+  it('should throw AuthenticationError if token is expired or invalid', async () => {
+    const loadFacebookUserApi = new LoadFacebookUserApiSpy()
+    loadFacebookUserApi.result = undefined
+    const sut = new FacebookAuthenticationService(loadFacebookUserApi)
+
+    const authResult = await sut.execute({ token: 'invalid-token' })
+
+    expect(authResult).toEqual(new AuthenticationError())
   })
 })
