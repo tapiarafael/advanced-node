@@ -4,9 +4,11 @@ import { AuthenticationError } from '@/domain/errors'
 
 class LoadFacebookUserApiSpy implements LoadFacebookUserApi {
   token?: string
+  callsCount = 0
   result = undefined
 
   async loadUser (params: LoadFacebookUserApi.Params): Promise<LoadFacebookUserApi.Result> {
+    this.callsCount++
     this.token = params.token
     return this.result
   }
@@ -20,6 +22,7 @@ describe('FacebookAuthenticationService', () => {
     await sut.execute({ token: 'valid-token' })
 
     expect(loadFacebookUserApi.token).toBe('valid-token')
+    expect(loadFacebookUserApi.callsCount).toBe(1)
   })
 
   it('should throw AuthenticationError if token is expired or invalid', async () => {
