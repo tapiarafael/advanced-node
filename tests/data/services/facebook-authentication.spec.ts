@@ -1,9 +1,12 @@
+import { mock } from 'jest-mock-extended'
+
 import { FacebookAuthenticationService } from '@/data/services'
 import { AuthenticationError } from '@/domain/errors'
+import type { LoadFacebookUserApi } from '@/data/contracts/apis'
 
 describe('FacebookAuthenticationService', () => {
   it('should call LoadFacebookUserApi with correct params', async () => {
-    const loadFacebookUserApiSpy = { loadUser: jest.fn() }
+    const loadFacebookUserApiSpy = mock<LoadFacebookUserApi>()
     const sut = new FacebookAuthenticationService(loadFacebookUserApiSpy)
 
     await sut.execute({ token: 'valid-token' })
@@ -13,7 +16,7 @@ describe('FacebookAuthenticationService', () => {
   })
 
   it('should throw AuthenticationError if token is expired or invalid', async () => {
-    const loadFacebookUserApiSpy = { loadUser: jest.fn() }
+    const loadFacebookUserApiSpy = mock<LoadFacebookUserApi>()
     loadFacebookUserApiSpy.loadUser.mockResolvedValueOnce(undefined)
     const sut = new FacebookAuthenticationService(loadFacebookUserApiSpy)
 
