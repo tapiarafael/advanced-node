@@ -5,6 +5,7 @@ import { AuthenticationError } from '@/domain/errors'
 import type { LoadFacebookUserApi } from '@/data/contracts/apis'
 
 describe('FacebookAuthenticationService', () => {
+  const token = 'valid_token'
   let loadFacebookUserApiSpy: MockProxy<LoadFacebookUserApi>
   let sut: FacebookAuthenticationService
 
@@ -14,9 +15,9 @@ describe('FacebookAuthenticationService', () => {
   })
 
   it('should call LoadFacebookUserApi with correct params', async () => {
-    await sut.execute({ token: 'valid-token' })
+    await sut.execute({ token })
 
-    expect(loadFacebookUserApiSpy.loadUser).toHaveBeenCalledWith({ token: 'valid-token' })
+    expect(loadFacebookUserApiSpy.loadUser).toHaveBeenCalledWith({ token })
     expect(loadFacebookUserApiSpy.loadUser).toHaveBeenCalledTimes(1)
   })
 
