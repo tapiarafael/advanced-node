@@ -18,10 +18,10 @@ export class FacebookAuthenticationService {
     if (facebookData !== undefined) {
       const accountUserData = await this.userAccountRepository.get({ email: facebookData.email })
 
-      if (accountUserData?.name !== undefined) {
+      if (accountUserData !== undefined) {
         await this.userAccountRepository.updateWithFacebook({
           id: accountUserData.id,
-          name: accountUserData.name,
+          name: accountUserData.name ?? facebookData.name,
           facebookId: facebookData.facebookId
         })
       }
