@@ -3,12 +3,12 @@ import { mock, type MockProxy } from 'jest-mock-extended'
 import { FacebookAuthenticationService } from '@/data/services'
 import { AuthenticationError } from '@/domain/errors'
 import type { LoadFacebookUserApi } from '@/data/contracts/apis'
-import type { CreateFacebookAccountRepository, GetUserAccountRepository } from '@/data/contracts/repositories'
+import type { CreateFacebookAccountRepository, GetUserAccountRepository, UpdateFacebookAccountRepository } from '@/data/contracts/repositories'
 
 describe('FacebookAuthenticationService', () => {
   const token = 'valid_token'
   let facebookApi: MockProxy<LoadFacebookUserApi>
-  let userAccountRepository: MockProxy<GetUserAccountRepository & CreateFacebookAccountRepository>
+  let userAccountRepository: MockProxy<GetUserAccountRepository & CreateFacebookAccountRepository & UpdateFacebookAccountRepository>
   let sut: FacebookAuthenticationService
 
   beforeEach(() => {
@@ -44,7 +44,7 @@ describe('FacebookAuthenticationService', () => {
     expect(userAccountRepository.get).toHaveBeenCalledTimes(1)
   })
 
-  it('should call CreateUserAccountRepository if GetUserAccountRepository returns undefined', async () => {
+  it('should call CreateFacebookAccountRepository if GetUserAccountRepository returns undefined', async () => {
     userAccountRepository.get.mockResolvedValueOnce(undefined)
     await sut.execute({ token })
 
@@ -54,5 +54,20 @@ describe('FacebookAuthenticationService', () => {
       facebookId: 'valid_fb_id'
     })
     expect(userAccountRepository.createFromFacebook).toHaveBeenCalledTimes(1)
+  })
+
+  it('should call UpdateFacebookAccountRepository if GetUserAccountRepository returns data', async () => {
+    userAccountRepository.get.mockResolvedValueOnce({
+      id: 'valid_id',
+      name: 'valid_name'
+    })
+    await sut.execute({ token })
+
+    expect(userAccountRepository.updateWithFacebook).toHaveBeenCalledWith({
+      id: 'valid_id',
+      name: 'valid_name',
+      facebookId: 'valid_fb_id'
+    })
+    expect(userAccountRepository.updateWithFacebook).toHaveBeenCalledTimes(1)
   })
 })
