@@ -4,6 +4,9 @@ import { FacebookAuthenticationService } from '@/data/services'
 import { AuthenticationError } from '@/domain/errors'
 import type { LoadFacebookUserApi } from '@/data/contracts/apis'
 import type { GetUserAccountRepository, SaveFacebookAccountRepository } from '@/data/contracts/repositories'
+import { FacebookAccount } from '@/domain/models'
+
+jest.mock('@/domain/models/facebook-account')
 
 describe('FacebookAuthenticationService', () => {
   const token = 'valid_token'
@@ -45,45 +48,12 @@ describe('FacebookAuthenticationService', () => {
     expect(userAccountRepository.get).toHaveBeenCalledTimes(1)
   })
 
-  it('should create account using facebook data', async () => {
+  it('should call SaveFacebookAccountRepository with FacebookAccount', async () => {
+    const FacebookAccountStub = jest.fn().mockImplementation(() => ({ fake_property: 'fake_value' }))
+    jest.mocked(FacebookAccount).mockImplementationOnce(FacebookAccountStub)
     await sut.execute({ token })
 
-    expect(userAccountRepository.saveWithFacebook).toHaveBeenCalledWith({
-      name: 'valid_fb_name',
-      email: 'valid_fb_email',
-      facebookId: 'valid_fb_id'
-    })
-    expect(userAccountRepository.saveWithFacebook).toHaveBeenCalledTimes(1)
-  })
-
-  it('should not update account name when name already exists', async () => {
-    userAccountRepository.get.mockResolvedValueOnce({
-      id: 'valid_id',
-      name: 'valid_name'
-    })
-    await sut.execute({ token })
-
-    expect(userAccountRepository.saveWithFacebook).toHaveBeenCalledWith({
-      id: 'valid_id',
-      name: 'valid_name',
-      email: 'valid_fb_email',
-      facebookId: 'valid_fb_id'
-    })
-    expect(userAccountRepository.saveWithFacebook).toHaveBeenCalledTimes(1)
-  })
-
-  it('should update account name when account name is empty', async () => {
-    userAccountRepository.get.mockResolvedValueOnce({
-      id: 'valid_id'
-    })
-    await sut.execute({ token })
-
-    expect(userAccountRepository.saveWithFacebook).toHaveBeenCalledWith({
-      id: 'valid_id',
-      name: 'valid_fb_name',
-      email: 'valid_fb_email',
-      facebookId: 'valid_fb_id'
-    })
+    expect(userAccountRepository.saveWithFacebook).toHaveBeenCalledWith({ fake_property: 'fake_value' })
     expect(userAccountRepository.saveWithFacebook).toHaveBeenCalledTimes(1)
   })
 })
